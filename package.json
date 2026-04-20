@@ -1,0 +1,31 @@
+{
+  "name": "exactamente-mcp",
+  "version": "0.1.0",
+  "description": "Read-only xmcp MCP server for Exactamente public academic data",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "xmcp build",
+    "dev": "xmcp dev",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start-http": "node dist/http.js",
+    "start-stdio": "node dist/stdio.js"
+  },
+  "dependencies": {
+    "xmcp": "^0.6.7",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "vitest": "^3.2.4"
+  },
+  "main": "./dist/stdio.js",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "exactamente-mcp": "./dist/stdio.js"
+  }
+}
