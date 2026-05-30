@@ -2,7 +2,7 @@
 
 Read-only MCP server built with `xmcp` for public data from `exactamente-backend`.
 
-It wraps the Exactamente REST API (`/api/v1/...`) and exposes stable agent-friendly tools for universities, faculties, careers, career plans, subjects and resources.
+It wraps the Exactamente REST API (`/api/v1/...`) and exposes stable agent-friendly tools for universities, faculties, careers, subjects and resources.
 
 ## Requirements
 
@@ -54,9 +54,43 @@ npm run dev
 - `search-subjects`
 - `get-subject`
 - `list-resources`
+- `find-subject-materials`
 - `download-resource`
 
-All tools are read-only and return structured payloads.
+Most tools are read-only and return structured payloads. `download-resource` writes a file to the local downloads directory and is idempotent.
+
+Tool responses include `structuredContent.agentHints.nextActions` where useful, so agents can chain calls without parsing the human-readable text.
+
+## Exposed prompts
+
+- `buscar-materiales-de-materia`
+- `descargar-parcial`
+- `explorar-carrera`
+- `diagnosticar-conexion`
+
+## Agent workflows
+
+Compact material search:
+
+```json
+{ "tool": "find-subject-materials", "args": { "search": "algoritmos", "type": "parcial", "limit": 5 } }
+```
+
+Manual resource lookup:
+
+1. `search-subjects` with `search`, `careerId`, `facultyId`, `year` or `quadmester`.
+2. Use the returned subject `id` as `subjectId`.
+3. `list-resources` with `subjectId` and optional `type`.
+4. Use the returned resource `id` as `resourceId`.
+5. `download-resource` with `resourceId` and `subjectId`.
+
+ID map:
+
+- `university.id` -> `list-faculties.universityId`
+- `faculty.id` -> `list-careers.facultyId` and `search-subjects.facultyId`
+- `career.id` -> `search-subjects.careerId`
+- `subject.id` -> `get-subject.subjectId`, `list-resources.subjectId`, `find-subject-materials.subjectId`
+- `resource.id` -> `download-resource.resourceId`
 
 ## Exposed resources
 
@@ -78,3 +112,4 @@ All tools are read-only and return structured payloads.
 2. Run `npm run dev`.
 3. Connect an MCP client via stdio.
 4. Call `health-check` and `list-universities`.
+5. Read `exactamente://meta` to inspect agent workflow guidance.

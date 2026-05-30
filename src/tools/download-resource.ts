@@ -6,14 +6,21 @@ import { exactamenteApiClient, toToolError } from "../lib/toolShared";
 import { config } from "../config";
 
 export const schema = {
-  resourceId: z.string().min(1).describe("The resource UUID to download"),
+  resourceId: z
+    .string()
+    .min(1)
+    .describe("The resource UUID to download. Use the id returned by list-resources."),
+  subjectId: z
+    .string()
+    .optional()
+    .describe("Optional subject UUID hint from list-resources. When provided, lookup is faster."),
 };
 
 export const metadata: ToolMetadata = {
   name: "download-resource",
   description: "Download a published resource file by its UUID",
   annotations: {
-    readOnlyHint: true,
+    readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: true,
@@ -43,12 +50,18 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
       throw new Error("Missing resourceId parameter");
     }
 
-    const resources = await exactamenteApiClient.listResources({ limit: 100 });
+    const baseResourceFilters = args.subjectId
+      ? { subjectId: args.subjectId, limit: 100 }
+      : { limit: 100 };
+    const resources = await exactamenteApiClient.listResources(baseResourceFilters);
     let resource = resources.data.find((r) => r.id === resourceId);
 
     if (!resource && resources.totalPages && resources.totalPages > 1) {
       for (let page = 2; page <= resources.totalPages; page += 1) {
-        const more = await exactamenteApiClient.listResources({ limit: 100, page });
+        const more = await exactamenteApiClient.listResources({
+          ...baseResourceFilters,
+          page,
+        });
         resource = more.data.find((r) => r.id === resourceId);
         if (resource) break;
       }
@@ -61,16 +74,6 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
     if (!resource.fileUrl) {
       throw new Error(`No file URL available for resource: ${resource.title}`);
     }
-
-    const response = await fetch(resource.fileUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to download resource file: HTTP ${response.status}`);
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const contentType = response.headers.get("content-type") || "application/octet-stream";
 
     const extensionMap: Record<string, string> = {
       "application/pdf": ".pdf",
@@ -85,17 +88,98 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
       "text/plain": ".txt",
       "text/html": ".html",
     };
-    const extension = extensionMap[contentType] || "";
-    
     let filename = resource.title.replace(/[<>:"/\\|?*]/g, "_");
-    if (extension && !filename.endsWith(extension)) {
-      filename += extension;
-    }
+    const remoteExtension = (() => {
+      try {
+        return path.extname(new URL(resource.fileUrl ?? "").pathname);
+      } catch {
+        return "";
+      }
+    })();
+    const filenameHasExtension = Boolean(path.extname(filename));
+    const initialFilename =
+      remoteExtension && !filenameHasExtension
+        ? `${resource.id}-${filename}${remoteExtension}`
+        : `${resource.id}-${filename}`;
 
     const downloadsDir = path.resolve(config.downloadsDir);
     await fs.mkdir(downloadsDir, { recursive: true });
 
+    const initialFilePath = path.join(downloadsDir, initialFilename);
+    const initialFileExists = await fs
+      .stat(initialFilePath)
+      .then((stat) => stat)
+      .catch(() => undefined);
+
+    if (initialFileExists) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Resource already downloaded\n\nTitle: ${resource.title}\nSize: ${initialFileExists.size} bytes\nFile path: ${initialFilePath}`,
+          },
+        ],
+        structuredContent: {
+          resourceId: resource.id,
+          subjectId: resource.subjectId,
+          title: resource.title,
+          type: resource.type,
+          size: initialFileExists.size,
+          contentType: "unknown",
+          filePath: initialFilePath,
+          filename: initialFilename,
+          absolutePath: initialFilePath,
+          alreadyExisted: true,
+        },
+      };
+    }
+
+    const response = await fetch(resource.fileUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to download resource file: HTTP ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const contentType = response.headers.get("content-type") || "application/octet-stream";
+    const normalizedContentType = contentType.split(";")[0]?.trim() || contentType;
+    const extension = extensionMap[normalizedContentType] || "";
+
+    if (extension && !filename.endsWith(extension) && !filenameHasExtension) {
+      filename += extension;
+    }
+
+    filename = `${resource.id}-${filename}`;
     const filePath = path.join(downloadsDir, filename);
+    const existingFile = await fs
+      .stat(filePath)
+      .then((stat) => stat)
+      .catch(() => undefined);
+
+    if (existingFile) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Resource already downloaded\n\nTitle: ${resource.title}\nSize: ${existingFile.size} bytes\nFile path: ${filePath}`,
+          },
+        ],
+        structuredContent: {
+          resourceId: resource.id,
+          subjectId: resource.subjectId,
+          title: resource.title,
+          type: resource.type,
+          size: existingFile.size,
+          contentType,
+          filePath,
+          filename,
+          absolutePath: filePath,
+          alreadyExisted: true,
+        },
+      };
+    }
+
     await fs.writeFile(filePath, buffer);
 
     return {
@@ -107,6 +191,7 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
       ],
       structuredContent: {
         resourceId: resource.id,
+        subjectId: resource.subjectId,
         title: resource.title,
         type: resource.type,
         size: arrayBuffer.byteLength,
@@ -114,6 +199,7 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
         filePath,
         filename,
         absolutePath: filePath,
+        alreadyExisted: false,
       },
     };
   } catch (error) {

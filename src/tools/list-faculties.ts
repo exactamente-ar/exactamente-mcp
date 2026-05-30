@@ -2,6 +2,8 @@ import { z } from "zod";
 import { type InferSchema, type ToolMetadata } from "xmcp";
 import {
   clampLimit,
+  createPaginationHints,
+  formatPaginationSuffix,
   exactamenteApiClient,
   readOnlyAnnotations,
   toToolError,
@@ -44,6 +46,28 @@ export default async function listFaculties(
       limit: clampLimit(args.limit),
     });
 
+    const nextActions = response.data.flatMap((f) => [
+      {
+        tool: "list-careers",
+        args: { facultyId: f.id },
+        reason: `List careers for ${f.shortName ?? f.name}.`,
+      },
+      {
+        tool: "search-subjects",
+        args: { facultyId: f.id },
+        reason: `Search subjects from ${f.shortName ?? f.name}.`,
+      },
+    ]);
+    const pagination = createPaginationHints(
+      "list-faculties",
+      {
+        universityId: args.universityId,
+        page: args.page,
+        limit: clampLimit(args.limit),
+      },
+      response.page,
+      response.totalPages
+    );
     const list = response.data
       .map((f) => `${f.id} — ${f.shortName ?? f.name} (${f.name})`)
       .join("\n");
@@ -52,10 +76,16 @@ export default async function listFaculties(
       content: [
         {
           type: "text",
-          text: `Found ${response.total ?? response.data.length} faculties:\n${list}`,
+          text: `Found ${response.total ?? response.data.length} faculties:\n${list}${formatPaginationSuffix(response.page, response.totalPages)}`,
         },
       ],
-      structuredContent: response,
+      structuredContent: {
+        ...response,
+        agentHints: {
+          nextActions,
+          ...(pagination ? { pagination } : {}),
+        },
+      },
     };
   } catch (error) {
     throw toToolError(error);

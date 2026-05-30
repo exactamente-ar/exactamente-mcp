@@ -2,6 +2,8 @@ import { z } from "zod";
 import { type InferSchema, type ToolMetadata } from "xmcp";
 import {
   clampLimit,
+  createPaginationHints,
+  formatPaginationSuffix,
   exactamenteApiClient,
   readOnlyAnnotations,
   toToolError,
@@ -35,6 +37,17 @@ export default async function listUniversities(
       limit: clampLimit(args.limit),
     });
 
+    const nextActions = response.data.map((u) => ({
+      tool: "list-faculties",
+      args: { universityId: u.id },
+      reason: `List faculties for ${u.shortName ?? u.name}.`,
+    }));
+    const pagination = createPaginationHints(
+      "list-universities",
+      { ...args, limit: clampLimit(args.limit) },
+      response.page,
+      response.totalPages
+    );
     const list = response.data
       .map((u) => `${u.id} — ${u.shortName ?? u.name} (${u.name})`)
       .join("\n");
@@ -43,10 +56,16 @@ export default async function listUniversities(
       content: [
         {
           type: "text",
-          text: `Found ${response.total ?? response.data.length} universities:\n${list}`,
+          text: `Found ${response.total ?? response.data.length} universities:\n${list}${formatPaginationSuffix(response.page, response.totalPages)}`,
         },
       ],
-      structuredContent: response,
+      structuredContent: {
+        ...response,
+        agentHints: {
+          nextActions,
+          ...(pagination ? { pagination } : {}),
+        },
+      },
     };
   } catch (error) {
     throw toToolError(error);

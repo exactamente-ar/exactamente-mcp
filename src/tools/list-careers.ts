@@ -26,6 +26,11 @@ export default async function listCareers({ facultyId }: InferSchema<typeof sche
   try {
     const response = await exactamenteApiClient.listCareers(facultyId);
 
+    const nextActions = response.data.map((c) => ({
+      tool: "search-subjects",
+      args: { careerId: c.id },
+      reason: `Search subjects for ${c.shortName ?? c.name}.`,
+    }));
     const list = response.data
       .map((c) => `${c.id} — ${c.shortName ?? c.name} (${c.name})`)
       .join("\n");
@@ -37,7 +42,12 @@ export default async function listCareers({ facultyId }: InferSchema<typeof sche
           text: `Found ${response.data.length} careers:\n${list}`,
         },
       ],
-      structuredContent: response,
+      structuredContent: {
+        ...response,
+        agentHints: {
+          nextActions,
+        },
+      },
     };
   } catch (error) {
     throw toToolError(error);

@@ -22,6 +22,15 @@ export default async function healthCheck() {
       structuredContent: {
         status: health.status,
         timestamp: health.timestamp,
+        agentHints: {
+          nextActions: [
+            {
+              tool: "list-universities",
+              args: { limit: 5 },
+              reason: "Verify the API can return public academic data.",
+            },
+          ],
+        },
       },
     };
   } catch (error) {

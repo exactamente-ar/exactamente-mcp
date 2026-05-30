@@ -76,6 +76,11 @@ export interface Subject {
     year: number;
     quadmester: number;
   }>;
+  resourceCounts?: {
+    resumen: number;
+    parcial: number;
+    final: number;
+  };
 }
 
 export interface SubjectDetailsResponse {
