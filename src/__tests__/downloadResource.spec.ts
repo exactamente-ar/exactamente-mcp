@@ -1,14 +1,7 @@
-import os from "node:os";
-import path from "node:path";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("download-resource", () => {
-  let downloadsDir = "";
-
   beforeEach(async () => {
-    downloadsDir = await mkdtemp(path.join(os.tmpdir(), "exactamente-mcp-"));
-    vi.stubEnv("EXACTAMENTE_DOWNLOADS_DIR", downloadsDir);
     vi.resetModules();
   });
 
@@ -16,22 +9,22 @@ describe("download-resource", () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
     vi.resetModules();
-    await rm(downloadsDir, { recursive: true, force: true });
   });
 
-  it("is not annotated as read-only because it writes a local file", async () => {
+  it("is annotated as read-only because it returns a URL without side effects", async () => {
     const { metadata } = await import("../tools/download-resource");
 
-    expect(metadata.annotations?.readOnlyHint).toBe(false);
+    expect(metadata.annotations?.readOnlyHint).toBe(true);
     expect(metadata.annotations?.idempotentHint).toBe(true);
     expect(metadata.annotations?.destructiveHint).toBe(false);
   });
 
-  it("uses subjectId for lookup and writes deterministic filenames", async () => {
+  it("uses subjectId for lookup and returns download URL", async () => {
     const resourceId = "2d070fd6-ceab-4b5d-a5eb-1b936958bfeb";
     const fileUrl = "https://files.test/parcial.pdf";
     const { default: downloadResource } = await import("../tools/download-resource");
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       const url = String(input);
 
       if (url.includes("/api/v1/resources")) {
@@ -61,13 +54,6 @@ describe("download-resource", () => {
         );
       }
 
-      if (url === fileUrl) {
-        return new Response("pdf bytes", {
-          status: 200,
-          headers: { "Content-Type": "application/pdf" },
-        });
-      }
-
       throw new Error(`Unexpected fetch: ${url}`);
     });
 
@@ -76,26 +62,17 @@ describe("download-resource", () => {
       subjectId: "A1C1M1",
     });
     const structured = result.structuredContent as {
-      filename: string;
-      filePath: string;
-      alreadyExisted: boolean;
+      downloadUrl: string;
       subjectId: string;
+      resourceId: string;
+      title: string;
+      type: string;
     };
 
-    expect(structured.filename).toBe(`${resourceId}-Parcial 2024.pdf`);
+    expect(structured.downloadUrl).toBe(fileUrl);
     expect(structured.subjectId).toBe("A1C1M1");
-    expect(structured.alreadyExisted).toBe(false);
-    await expect(readFile(structured.filePath, "utf8")).resolves.toBe("pdf bytes");
-
-    const secondResult = await downloadResource({
-      resourceId,
-      subjectId: "A1C1M1",
-    });
-    const secondStructured = secondResult.structuredContent as {
-      alreadyExisted: boolean;
-    };
-
-    expect(secondStructured.alreadyExisted).toBe(true);
-    expect(fetchMock.mock.calls.filter(([input]) => String(input) === fileUrl)).toHaveLength(1);
+    expect(structured.resourceId).toBe(resourceId);
+    expect(structured.title).toBe("Parcial 2024");
+    expect(structured.type).toBe("parcial");
   });
 });

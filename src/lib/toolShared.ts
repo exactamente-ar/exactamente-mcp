@@ -6,7 +6,7 @@ export const readOnlyAnnotations: ToolMetadata["annotations"] = {
   readOnlyHint: true,
   destructiveHint: false,
   idempotentHint: true,
-  openWorldHint: true,
+  openWorldHint: false,
 };
 
 export interface ToolNextAction {

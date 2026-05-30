@@ -5,3 +5,10 @@ dist
 .xmcp
 xmcp-env.d.ts
 .env
+
+# Cloudflare
+worker.js
+.wrangler/
+
+# Downloads
+downloads/

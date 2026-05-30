@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "exactamente-mcp",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-05-29",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "EXACTAMENTE_API_BASE_URL": "https://api.exactamente.com.ar"
+  }
+}

@@ -23,6 +23,12 @@ const config: XmcpConfig = {
     silent: true,
     debug: false,
   },
+  template: {
+    name: "Exactamente",
+    description:
+      "Buscá materiales académicos: parciales, finales y resúmenes de universidades argentinas.",
+    icons: [{ src: "xmcp.svg", mimeType: "image/svg+xml" }],
+  },
   paths: {
     tools: "src/tools",
     prompts: "src/prompts",
