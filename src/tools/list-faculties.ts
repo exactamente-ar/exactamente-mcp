@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { type InferSchema, type ToolMetadata } from "xmcp";
 import {
+  clampLimit,
   exactamenteApiClient,
   readOnlyAnnotations,
   toToolError,
@@ -11,6 +12,13 @@ export const schema = {
     .string()
     .optional()
     .describe("Optional university UUID to filter faculties"),
+  page: z.number().int().min(1).optional().describe("Page number (starts at 1)"),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Items per page (capped by server configuration)"),
 };
 
 export const metadata: ToolMetadata = {
@@ -22,19 +30,29 @@ export const metadata: ToolMetadata = {
   },
 };
 
-export default async function listFaculties({
-  universityId,
-}: InferSchema<typeof schema>) {
+export default async function listFaculties(
+  args: InferSchema<typeof schema> = {
+    universityId: undefined,
+    page: undefined,
+    limit: undefined,
+  }
+) {
   try {
-    const response = await exactamenteApiClient.listFaculties(universityId);
+    const response = await exactamenteApiClient.listFaculties({
+      universityId: args.universityId,
+      page: args.page,
+      limit: clampLimit(args.limit),
+    });
 
-    const list = response.data.map((f) => `${f.id} — ${f.name}`).join("\n");
+    const list = response.data
+      .map((f) => `${f.id} — ${f.shortName ?? f.name} (${f.name})`)
+      .join("\n");
 
     return {
       content: [
         {
           type: "text",
-          text: `Found ${response.data.length} faculties:\n${list}`,
+          text: `Found ${response.total ?? response.data.length} faculties:\n${list}`,
         },
       ],
       structuredContent: response,

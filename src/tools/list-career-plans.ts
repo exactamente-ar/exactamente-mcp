@@ -7,34 +7,33 @@ import {
 } from "../lib/toolShared";
 
 export const schema = {
-  facultyId: z
-    .string()
-    .optional()
-    .describe("Optional faculty UUID to filter careers"),
+  careerId: z.string().min(1).describe("Career UUID"),
 };
 
 export const metadata: ToolMetadata = {
-  name: "list-careers",
-  description: "List careers, optionally filtered by faculty",
+  name: "list-career-plans",
+  description: "List available study plans for a career",
   annotations: {
     ...readOnlyAnnotations,
-    title: "List careers",
+    title: "List career plans",
   },
 };
 
-export default async function listCareers({ facultyId }: InferSchema<typeof schema>) {
+export default async function listCareerPlans({
+  careerId,
+}: InferSchema<typeof schema>) {
   try {
-    const response = await exactamenteApiClient.listCareers(facultyId);
+    const response = await exactamenteApiClient.listCareerPlans(careerId);
 
     const list = response.data
-      .map((c) => `${c.id} — ${c.shortName ?? c.name} (${c.name})`)
+      .map((plan) => `${plan.id} — ${plan.name} (${plan.year})`)
       .join("\n");
 
     return {
       content: [
         {
           type: "text",
-          text: `Found ${response.data.length} careers:\n${list}`,
+          text: `Found ${response.data.length} career plans:\n${list}`,
         },
       ],
       structuredContent: response,

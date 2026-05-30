@@ -2,7 +2,7 @@
 
 Read-only MCP server built with `xmcp` for public data from `exactamente-backend`.
 
-It wraps the Exactamente REST API (`/api/v1/...`) and exposes stable agent-friendly tools for universities, faculties, careers, subjects and resources.
+It wraps the Exactamente REST API (`/api/v1/...`) and exposes stable agent-friendly tools for universities, faculties, careers, career plans, subjects and resources.
 
 ## Requirements
 
@@ -50,9 +50,11 @@ npm run dev
 - `list-universities`
 - `list-faculties`
 - `list-careers`
+- `list-career-plans`
 - `search-subjects`
 - `get-subject`
 - `list-resources`
+- `download-resource`
 
 All tools are read-only and return structured payloads.
 

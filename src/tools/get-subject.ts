@@ -24,9 +24,15 @@ export default async function getSubject({ subjectId }: InferSchema<typeof schem
     const response = await exactamenteApiClient.getSubject(subjectId);
 
     const s = response.subject;
+    const careers = s.careers?.length
+      ? s.careers
+          .map((c) => `${c.careerName}, plan ${c.planId} (${c.year}A${c.quadmester})`)
+          .join("; ")
+      : "(sin carreras asociadas)";
     const details = `${s.id} — ${s.title}
 Año: ${s.year}, Cuatrimestre: ${s.quadmester}
 Slug: ${s.slug}
+Carreras: ${careers}
 Descripción: ${s.description?.slice(0, 200) || "(sin descripción)"}...`;
 
     return {

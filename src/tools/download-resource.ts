@@ -11,7 +11,7 @@ export const schema = {
 
 export const metadata: ToolMetadata = {
   name: "download-resource",
-  description: "Download a resource file from Google Drive by its UUID",
+  description: "Download a published resource file by its UUID",
   annotations: {
     readOnlyHint: true,
     destructiveHint: false,
@@ -58,14 +58,14 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
       throw new Error(`Resource not found: ${resourceId}`);
     }
 
-    if (!resource.downloadUrl) {
-      throw new Error(`No download URL available for resource: ${resource.title}`);
+    if (!resource.fileUrl) {
+      throw new Error(`No file URL available for resource: ${resource.title}`);
     }
 
-    const response = await fetch(resource.downloadUrl);
+    const response = await fetch(resource.fileUrl);
 
     if (!response.ok) {
-      throw new Error(`Failed to download from Google Drive: HTTP ${response.status}`);
+      throw new Error(`Failed to download resource file: HTTP ${response.status}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -102,7 +102,7 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
       content: [
         {
           type: "text",
-          text: `✅ Resource downloaded successfully\n\nTitle: ${resource.title}\nSize: ${arrayBuffer.byteLength} bytes\nFile path: ${filePath}\n\nThe file has been saved to your local filesystem at the path shown above.`,
+          text: `Resource downloaded successfully\n\nTitle: ${resource.title}\nSize: ${arrayBuffer.byteLength} bytes\nFile path: ${filePath}\n\nThe file has been saved to your local filesystem at the path shown above.`,
         },
       ],
       structuredContent: {

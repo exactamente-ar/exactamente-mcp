@@ -30,6 +30,7 @@ interface ListResponse<T> {
 export interface University {
   id: string;
   name: string;
+  shortName?: string | null;
   slug: string;
   createdAt: string;
 }
@@ -38,6 +39,7 @@ export interface Faculty {
   id: string;
   universityId: string;
   name: string;
+  shortName?: string | null;
   slug: string;
   createdAt: string;
 }
@@ -46,8 +48,16 @@ export interface Career {
   id: string;
   facultyId: string;
   name: string;
+  shortName?: string | null;
   slug: string;
   createdAt: string;
+}
+
+export interface CareerPlan {
+  id: string;
+  careerId: string;
+  name: string;
+  year: number;
 }
 
 export interface Subject {
@@ -62,7 +72,18 @@ export interface Subject {
   quadmester: number;
   createdAt: string;
   updatedAt: string;
-  careers?: Array<{ careerId: string; year: number; quadmester: number }>;
+  careers?: Array<{
+    careerId: string;
+    careerName: string;
+    facultyId: string;
+    facultyName: string;
+    universityId: string;
+    universityName: string;
+    planId: string;
+    year: number;
+    quadmester: number;
+  }>;
+  resourceCounts?: Record<"resumen" | "parcial" | "final", number>;
   prerequisites?: string[];
   correlatives?: string[];
 }
@@ -91,14 +112,21 @@ export interface Resource {
   subjectId: string;
   title: string;
   type: "resumen" | "parcial" | "final";
+  subtype?: "parcial" | "recuperatorio" | "prefinal" | "parcialito" | null;
   status?: string;
-  driveFileId?: string;
-  driveSize?: number;
+  examYear?: number | null;
+  examMonth?: number | null;
+  topic?: number | null;
+  notes?: string | null;
   downloadCount?: number;
   publishedAt?: string | null;
   createdAt: string;
-  previewUrl?: string;
-  downloadUrl?: string;
+  fileUrl?: string | null;
+}
+
+export interface PaginationFilters {
+  page?: number;
+  limit?: number;
 }
 
 export interface SubjectsFilters {
@@ -211,16 +239,20 @@ export class ExactamenteApiClient {
     return this.request<{ status: string; timestamp: string }>("/health");
   }
 
-  listUniversities() {
-    return this.request<ListResponse<University>>("/api/v1/universities");
+  listUniversities(filters?: PaginationFilters) {
+    return this.request<ListResponse<University>>("/api/v1/universities", filters);
   }
 
-  listFaculties(universityId?: string) {
-    return this.request<ListResponse<Faculty>>("/api/v1/faculties", { universityId });
+  listFaculties(filters?: PaginationFilters & { universityId?: string }) {
+    return this.request<ListResponse<Faculty>>("/api/v1/faculties", filters);
   }
 
   listCareers(facultyId?: string) {
     return this.request<ListResponse<Career>>("/api/v1/careers", { facultyId });
+  }
+
+  listCareerPlans(careerId: string) {
+    return this.request<ListResponse<CareerPlan>>("/api/v1/career-plans", { careerId });
   }
 
   listSubjects(filters: SubjectsFilters) {

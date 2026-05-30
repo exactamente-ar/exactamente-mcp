@@ -9,7 +9,7 @@ export const schema = {
 export const metadata: ResourceMetadata = {
   name: "subject-details",
   title: "Subject details",
-  description: "Read-only subject details with prerequisites and correlatives",
+  description: "Read-only subject details with career associations",
   mimeType: "application/json",
 };
 

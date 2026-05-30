@@ -39,7 +39,11 @@ export default async function listResources(args: InferSchema<typeof schema>) {
     });
 
     const resourceList = response.data
-      .map((r) => `${r.id} — ${r.title}`)
+      .map((r) => {
+        const date = r.examMonth && r.examYear ? ` ${r.examMonth}/${r.examYear}` : "";
+        const topic = r.topic ? ` tema ${r.topic}` : "";
+        return `${r.id} — ${r.title} [${r.subtype ?? r.type}${date}${topic}]`;
+      })
       .join("\n");
 
     return {
