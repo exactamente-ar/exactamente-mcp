@@ -53,13 +53,6 @@ export interface Career {
   createdAt: string;
 }
 
-export interface CareerPlan {
-  id: string;
-  careerId: string;
-  name: string;
-  year: number;
-}
-
 export interface Subject {
   id: string;
   facultyId: string;
@@ -83,28 +76,10 @@ export interface Subject {
     year: number;
     quadmester: number;
   }>;
-  resourceCounts?: Record<"resumen" | "parcial" | "final", number>;
-  prerequisites?: string[];
-  correlatives?: string[];
 }
 
 export interface SubjectDetailsResponse {
-  subject: Subject & {
-    prerequisiteSubjects?: Array<{
-      id: string;
-      title: string;
-      slug: string;
-      year: number;
-      quadmester: number;
-    }>;
-    correlativeSubjects?: Array<{
-      id: string;
-      title: string;
-      slug: string;
-      year: number;
-      quadmester: number;
-    }>;
-  };
+  subject: Subject;
 }
 
 export interface Resource {
@@ -249,10 +224,6 @@ export class ExactamenteApiClient {
 
   listCareers(facultyId?: string) {
     return this.request<ListResponse<Career>>("/api/v1/careers", { facultyId });
-  }
-
-  listCareerPlans(careerId: string) {
-    return this.request<ListResponse<CareerPlan>>("/api/v1/career-plans", { careerId });
   }
 
   listSubjects(filters: SubjectsFilters) {

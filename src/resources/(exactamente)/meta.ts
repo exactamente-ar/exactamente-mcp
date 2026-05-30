@@ -17,7 +17,6 @@ export default function meta() {
         "list-universities",
         "list-faculties",
         "list-careers",
-        "list-career-plans",
         "search-subjects",
         "get-subject",
         "list-resources",
