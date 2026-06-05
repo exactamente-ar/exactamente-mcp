@@ -2,6 +2,7 @@
   "name": "exactamente-mcp",
   "version": "0.1.0",
   "description": "Read-only xmcp MCP server for Exactamente public academic data",
+  "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
   },
