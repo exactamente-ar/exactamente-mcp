@@ -1,0 +1,7 @@
+dist
+.xmcp
+.wrangler
+node_modules
+pnpm-lock.yaml
+worker.js
+xmcp-env.d.ts
