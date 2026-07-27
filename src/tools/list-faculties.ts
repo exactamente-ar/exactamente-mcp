@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { type InferSchema, type ToolMetadata } from "xmcp";
+import { z } from 'zod';
+import { type InferSchema, type ToolMetadata } from 'xmcp';
 import {
   clampLimit,
   createPaginationHints,
@@ -7,28 +7,25 @@ import {
   exactamenteApiClient,
   readOnlyAnnotations,
   toToolError,
-} from "../lib/toolShared";
+} from '../lib/toolShared';
 
 export const schema = {
-  universityId: z
-    .string()
-    .optional()
-    .describe("Optional university UUID to filter faculties"),
-  page: z.number().int().min(1).optional().describe("Page number (starts at 1)"),
+  universityId: z.string().optional().describe('Optional university UUID to filter faculties'),
+  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe("Items per page (capped by server configuration)"),
+    .describe('Items per page (capped by server configuration)'),
 };
 
 export const metadata: ToolMetadata = {
-  name: "list-faculties",
-  description: "List faculties, optionally filtered by university",
+  name: 'list-faculties',
+  description: 'List faculties, optionally filtered by university',
   annotations: {
     ...readOnlyAnnotations,
-    title: "List faculties",
+    title: 'List faculties',
   },
 };
 
@@ -37,7 +34,7 @@ export default async function listFaculties(
     universityId: undefined,
     page: undefined,
     limit: undefined,
-  }
+  },
 ) {
   try {
     const response = await exactamenteApiClient.listFaculties({
@@ -48,34 +45,34 @@ export default async function listFaculties(
 
     const nextActions = response.data.flatMap((f) => [
       {
-        tool: "list-careers",
+        tool: 'list-careers',
         args: { facultyId: f.id },
         reason: `List careers for ${f.shortName ?? f.name}.`,
       },
       {
-        tool: "search-subjects",
+        tool: 'search-subjects',
         args: { facultyId: f.id },
         reason: `Search subjects from ${f.shortName ?? f.name}.`,
       },
     ]);
     const pagination = createPaginationHints(
-      "list-faculties",
+      'list-faculties',
       {
         universityId: args.universityId,
         page: args.page,
         limit: clampLimit(args.limit),
       },
       response.page,
-      response.totalPages
+      response.totalPages,
     );
     const list = response.data
       .map((f) => `${f.id} — ${f.shortName ?? f.name} (${f.name})`)
-      .join("\n");
+      .join('\n');
 
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: `Found ${response.total ?? response.data.length} faculties:\n${list}${formatPaginationSuffix(response.page, response.totalPages)}`,
         },
       ],

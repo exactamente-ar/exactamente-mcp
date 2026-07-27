@@ -1,34 +1,28 @@
-import { z } from "zod";
-import { type InferSchema, type PromptMetadata } from "xmcp";
+import { z } from 'zod';
+import { type InferSchema, type PromptMetadata } from 'xmcp';
 
 export const schema = {
-  materia: z.string().optional().describe("Nombre o parte del nombre de la materia"),
-  carrera: z.string().optional().describe("Nombre o id de carrera si el usuario lo da"),
-  tipo: z
-    .string()
-    .optional()
-    .describe("Tipo de recurso pedido: resumen, parcial o final"),
+  materia: z.string().optional().describe('Nombre o parte del nombre de la materia'),
+  carrera: z.string().optional().describe('Nombre o id de carrera si el usuario lo da'),
+  tipo: z.string().optional().describe('Tipo de recurso pedido: resumen, parcial o final'),
 };
 
 export const metadata: PromptMetadata = {
-  name: "buscar-materiales-de-materia",
-  title: "Buscar materiales de materia",
-  description:
-    "Guia al agente para encontrar recursos publicados de una materia de Exactamente.",
-  role: "user",
+  name: 'buscar-materiales-de-materia',
+  title: 'Buscar materiales de materia',
+  description: 'Guia al agente para encontrar recursos publicados de una materia de Exactamente.',
+  role: 'user',
 };
 
-export default function buscarMaterialesDeMateria(
-  params: InferSchema<typeof schema>
-) {
-  const materia = params.materia ?? "<materia>";
-  const tipo = params.tipo ?? "<resumen|parcial|final opcional>";
+export default function buscarMaterialesDeMateria(params: InferSchema<typeof schema>) {
+  const materia = params.materia ?? '<materia>';
+  const tipo = params.tipo ?? '<resumen|parcial|final opcional>';
 
   return `Objetivo: encontrar materiales publicados para una materia de Exactamente.
 
 Contexto del usuario:
 - Materia: ${materia}
-- Carrera: ${params.carrera ?? "no especificada"}
+- Carrera: ${params.carrera ?? 'no especificada'}
 - Tipo de recurso: ${tipo}
 
 Workflow recomendado:

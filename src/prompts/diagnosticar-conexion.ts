@@ -1,13 +1,13 @@
-import { type PromptMetadata } from "xmcp";
+import { type PromptMetadata } from 'xmcp';
 
 export const schema = {};
 
 export const metadata: PromptMetadata = {
-  name: "diagnosticar-conexion",
-  title: "Diagnosticar conexion",
+  name: 'diagnosticar-conexion',
+  title: 'Diagnosticar conexion',
   description:
-    "Guia al agente para verificar conectividad y disponibilidad del backend Exactamente.",
-  role: "user",
+    'Guia al agente para verificar conectividad y disponibilidad del backend Exactamente.',
+  role: 'user',
 };
 
 export default function diagnosticarConexion() {

@@ -1,12 +1,12 @@
-import { config } from "../config";
+import { config } from '../config';
 
 export type ApiErrorCode =
-  | "validation_error"
-  | "unauthorized"
-  | "forbidden"
-  | "not_found"
-  | "rate_limited"
-  | "upstream_error";
+  | 'validation_error'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'not_found'
+  | 'rate_limited'
+  | 'upstream_error';
 
 export class ApiClientError extends Error {
   readonly code: ApiErrorCode;
@@ -14,7 +14,7 @@ export class ApiClientError extends Error {
 
   constructor(code: ApiErrorCode, message: string, status?: number) {
     super(message);
-    this.name = "ApiClientError";
+    this.name = 'ApiClientError';
     this.code = code;
     this.status = status;
   }
@@ -91,8 +91,8 @@ export interface Resource {
   id: string;
   subjectId: string;
   title: string;
-  type: "resumen" | "parcial" | "final";
-  subtype?: "parcial" | "recuperatorio" | "prefinal" | "parcialito" | null;
+  type: 'resumen' | 'parcial' | 'final';
+  subtype?: 'parcial' | 'recuperatorio' | 'prefinal' | 'parcialito' | null;
   status?: string;
   examYear?: number | null;
   examMonth?: number | null;
@@ -121,7 +121,7 @@ export interface SubjectsFilters {
 
 export interface ResourcesFilters {
   subjectId?: string;
-  type?: "resumen" | "parcial" | "final";
+  type?: 'resumen' | 'parcial' | 'final';
   page?: number;
   limit?: number;
 }
@@ -138,9 +138,7 @@ function buildUrl(path: string, query?: object): string {
     for (const [key, value] of Object.entries(query as Record<string, unknown>)) {
       if (
         value !== undefined &&
-        (typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === "boolean")
+        (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
       ) {
         url.searchParams.set(key, String(value));
       }
@@ -150,12 +148,12 @@ function buildUrl(path: string, query?: object): string {
 }
 
 function mapHttpError(status: number, message: string): ApiClientError {
-  if (status === 400) return new ApiClientError("validation_error", message, status);
-  if (status === 401) return new ApiClientError("unauthorized", message, status);
-  if (status === 403) return new ApiClientError("forbidden", message, status);
-  if (status === 404) return new ApiClientError("not_found", message, status);
-  if (status === 429) return new ApiClientError("rate_limited", message, status);
-  return new ApiClientError("upstream_error", message, status);
+  if (status === 400) return new ApiClientError('validation_error', message, status);
+  if (status === 401) return new ApiClientError('unauthorized', message, status);
+  if (status === 403) return new ApiClientError('forbidden', message, status);
+  if (status === 404) return new ApiClientError('not_found', message, status);
+  if (status === 429) return new ApiClientError('rate_limited', message, status);
+  return new ApiClientError('upstream_error', message, status);
 }
 
 async function parseErrorMessage(response: Response): Promise<string> {
@@ -168,10 +166,7 @@ async function parseErrorMessage(response: Response): Promise<string> {
 }
 
 export class ExactamenteApiClient {
-  private async request<T>(
-    path: string,
-    query?: object
-  ): Promise<T> {
+  private async request<T>(path: string, query?: object): Promise<T> {
     const url = buildUrl(path, query);
     const attempts = Math.max(1, config.retryCount + 1);
     let latestError: unknown;
@@ -182,9 +177,9 @@ export class ExactamenteApiClient {
 
       try {
         const response = await fetch(url, {
-          method: "GET",
+          method: 'GET',
           headers: {
-            Accept: "application/json",
+            Accept: 'application/json',
           },
           signal: controller.signal,
         });
@@ -199,7 +194,7 @@ export class ExactamenteApiClient {
         latestError = error;
         const shouldRetry =
           attempt < attempts &&
-          (!(error instanceof ApiClientError) || error.code === "upstream_error");
+          (!(error instanceof ApiClientError) || error.code === 'upstream_error');
 
         if (!shouldRetry) break;
         await wait(config.retryDelayMs);
@@ -210,29 +205,28 @@ export class ExactamenteApiClient {
 
     if (latestError instanceof ApiClientError) throw latestError;
 
-    const reason =
-      latestError instanceof Error ? latestError.message : "Unknown upstream failure";
-    throw new ApiClientError("upstream_error", `Failed to call Exactamente API: ${reason}`);
+    const reason = latestError instanceof Error ? latestError.message : 'Unknown upstream failure';
+    throw new ApiClientError('upstream_error', `Failed to call Exactamente API: ${reason}`);
   }
 
   health() {
-    return this.request<{ status: string; timestamp: string }>("/health");
+    return this.request<{ status: string; timestamp: string }>('/health');
   }
 
   listUniversities(filters?: PaginationFilters) {
-    return this.request<ListResponse<University>>("/api/v1/universities", filters);
+    return this.request<ListResponse<University>>('/api/v1/universities', filters);
   }
 
   listFaculties(filters?: PaginationFilters & { universityId?: string }) {
-    return this.request<ListResponse<Faculty>>("/api/v1/faculties", filters);
+    return this.request<ListResponse<Faculty>>('/api/v1/faculties', filters);
   }
 
   listCareers(facultyId?: string) {
-    return this.request<ListResponse<Career>>("/api/v1/careers", { facultyId });
+    return this.request<ListResponse<Career>>('/api/v1/careers', { facultyId });
   }
 
   listSubjects(filters: SubjectsFilters) {
-    return this.request<ListResponse<Subject>>("/api/v1/subjects", filters);
+    return this.request<ListResponse<Subject>>('/api/v1/subjects', filters);
   }
 
   getSubject(subjectId: string) {
@@ -240,7 +234,7 @@ export class ExactamenteApiClient {
   }
 
   listResources(filters: ResourcesFilters) {
-    return this.request<ListResponse<Resource>>("/api/v1/resources", filters);
+    return this.request<ListResponse<Resource>>('/api/v1/resources', filters);
   }
 }
 

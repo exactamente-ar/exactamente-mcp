@@ -1,4 +1,4 @@
-import type { WebMiddleware } from "xmcp/cloudflare";
+import type { WebMiddleware } from 'xmcp/cloudflare';
 
 const middleware: WebMiddleware = async () => {
   return undefined;

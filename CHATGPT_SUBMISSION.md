@@ -32,35 +32,35 @@ Your MCP server URL will be: `https://exactamente-mcp.<your-subdomain>.workers.d
 
 ### Basic Information
 
-| Field | Value |
-|---|---|
-| **App Name** | Exactamente |
-| **Description** | Search and download academic materials — exams, summaries, and finals from Argentine universities. |
-| **Company Name** | _(your name or business name — must match verified org)_ |
-| **Company URL** | _(your website URL)_ |
-| **Privacy Policy URL** | _(required — must disclose academic data returned by tools)_ |
+| Field                  | Value                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **App Name**           | Exactamente                                                                                        |
+| **Description**        | Search and download academic materials — exams, summaries, and finals from Argentine universities. |
+| **Company Name**       | _(your name or business name — must match verified org)_                                           |
+| **Company URL**        | _(your website URL)_                                                                               |
+| **Privacy Policy URL** | _(required — must disclose academic data returned by tools)_                                       |
 
 ### MCP Server Configuration
 
-| Field | Value |
-|---|---|
-| **MCP Server URL** | `https://exactamente-mcp.<your-subdomain>.workers.dev/mcp` |
-| **Authentication** | None (public API) |
-| **Template MCP Server URL** | _(leave blank — universal endpoint)_ |
+| Field                       | Value                                                      |
+| --------------------------- | ---------------------------------------------------------- |
+| **MCP Server URL**          | `https://exactamente-mcp.<your-subdomain>.workers.dev/mcp` |
+| **Authentication**          | None (public API)                                          |
+| **Template MCP Server URL** | _(leave blank — universal endpoint)_                       |
 
 ### Tool Information
 
-| Tool | Description | readOnlyHint | destructiveHint | openWorldHint |
-|---|---|---|---|---|
-| `health-check` | Check backend health status | `true` | `false` | `false` |
-| `list-universities` | List available universities | `true` | `false` | `false` |
-| `list-faculties` | List faculties, optionally by university | `true` | `false` | `false` |
-| `list-careers` | List careers, optionally by faculty | `true` | `false` | `false` |
-| `search-subjects` | Search and filter subjects | `true` | `false` | `false` |
-| `get-subject` | Get detailed subject information | `true` | `false` | `false` |
-| `list-resources` | List published study resources | `true` | `false` | `false` |
-| `find-subject-materials` | Combined subject + resource search | `true` | `false` | `false` |
-| `download-resource` | Get download URL for a resource file | `true` | `false` | `false` |
+| Tool                     | Description                              | readOnlyHint | destructiveHint | openWorldHint |
+| ------------------------ | ---------------------------------------- | ------------ | --------------- | ------------- |
+| `health-check`           | Check backend health status              | `true`       | `false`         | `false`       |
+| `list-universities`      | List available universities              | `true`       | `false`         | `false`       |
+| `list-faculties`         | List faculties, optionally by university | `true`       | `false`         | `false`       |
+| `list-careers`           | List careers, optionally by faculty      | `true`       | `false`         | `false`       |
+| `search-subjects`        | Search and filter subjects               | `true`       | `false`         | `false`       |
+| `get-subject`            | Get detailed subject information         | `true`       | `false`         | `false`       |
+| `list-resources`         | List published study resources           | `true`       | `false`         | `false`       |
+| `find-subject-materials` | Combined subject + resource search       | `true`       | `false`         | `false`       |
+| `download-resource`      | Get download URL for a resource file     | `true`       | `false`         | `false`       |
 
 ### Test Prompts & Expected Responses
 
@@ -69,9 +69,11 @@ Provide at least 3 test cases. Each must pass on both ChatGPT web and mobile.
 #### Test 1: Explore universities
 
 **Prompt:**
+
 > Listá las universidades disponibles
 
 **Expected behavior:**
+
 - Calls `list-universities`
 - Returns a list of universities with names and IDs
 - Suggests next action: explore faculties of a university
@@ -79,9 +81,11 @@ Provide at least 3 test cases. Each must pass on both ChatGPT web and mobile.
 #### Test 2: Search for exam materials
 
 **Prompt:**
+
 > Buscá parciales de Análisis Matemático
 
 **Expected behavior:**
+
 - Calls `search-subjects` with search="Análisis Matemático"
 - Calls `list-resources` or `find-subject-materials` with type="parcial"
 - Returns matching exam resources with titles, years, and download URLs
@@ -89,9 +93,11 @@ Provide at least 3 test cases. Each must pass on both ChatGPT web and mobile.
 #### Test 3: Download a specific resource
 
 **Prompt:**
+
 > Descargá el final de Álgebra de 2024
 
 **Expected behavior:**
+
 - Calls `search-subjects` with search="Álgebra"
 - Calls `list-resources` with type="final"
 - Calls `download-resource` with the matching resource ID
@@ -100,9 +106,11 @@ Provide at least 3 test cases. Each must pass on both ChatGPT web and mobile.
 #### Test 4: Navigate career structure
 
 **Prompt:**
+
 > Mostrame las materias de primer año de Ingeniería en Sistemas
 
 **Expected behavior:**
+
 - Calls `list-universities` → `list-faculties` → `list-careers` to find the career
 - Calls `search-subjects` with careerId and year=1
 - Returns a list of first-year subjects for that career
@@ -110,9 +118,11 @@ Provide at least 3 test cases. Each must pass on both ChatGPT web and mobile.
 #### Test 5: Health check
 
 **Prompt:**
+
 > Verificá la conexión con Exactamente
 
 **Expected behavior:**
+
 - Calls `health-check`
 - Returns status "ok" with timestamp
 - Confirms the backend is reachable
@@ -128,9 +138,9 @@ Capture screenshots showing the app working correctly on:
 
 ### Localization
 
-| Field | Value |
-|---|---|
-| **Primary Language** | Spanish (es) |
+| Field                   | Value                                 |
+| ----------------------- | ------------------------------------- |
+| **Primary Language**    | Spanish (es)                          |
 | **Supported Countries** | Argentina (AR) — add others as needed |
 
 ---

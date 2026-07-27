@@ -1,8 +1,8 @@
-import { type ToolMetadata } from "xmcp";
-import { exactamenteApiClient, ApiClientError } from "../client/exactamenteApi";
-import { config } from "../config";
+import { type ToolMetadata } from 'xmcp';
+import { exactamenteApiClient, ApiClientError } from '../client/exactamenteApi';
+import { config } from '../config';
 
-export const readOnlyAnnotations: ToolMetadata["annotations"] = {
+export const readOnlyAnnotations: ToolMetadata['annotations'] = {
   readOnlyHint: true,
   destructiveHint: false,
   idempotentHint: true,
@@ -33,8 +33,8 @@ export function createPaginationHints(
   tool: string,
   args: Record<string, unknown>,
   page?: number,
-  totalPages?: number
-): AgentHints["pagination"] | undefined {
+  totalPages?: number,
+): AgentHints['pagination'] | undefined {
   if (!page || !totalPages || page >= totalPages) return undefined;
 
   return {
@@ -46,13 +46,13 @@ export function createPaginationHints(
         ...args,
         page: page + 1,
       },
-      reason: "Fetch the next page of results.",
+      reason: 'Fetch the next page of results.',
     },
   };
 }
 
 export function formatPaginationSuffix(page?: number, totalPages?: number): string {
-  if (!page || !totalPages || totalPages <= 1) return "";
+  if (!page || !totalPages || totalPages <= 1) return '';
   return `\nPage ${page} of ${totalPages}.`;
 }
 
@@ -65,7 +65,7 @@ export function toToolError(error: unknown): Error {
     return new Error(`[upstream_error] ${error.message}`);
   }
 
-  return new Error("[upstream_error] Unknown error");
+  return new Error('[upstream_error] Unknown error');
 }
 
 export { exactamenteApiClient };
