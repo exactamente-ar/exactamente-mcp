@@ -12,6 +12,8 @@ export default tseslint.config(
       'node_modules/**',
       'worker.js',
       'xmcp-env.d.ts',
+      // Generado por `pnpm gen:api` desde el OpenAPI del backend.
+      'src/types/api.d.ts',
     ],
   },
 
@@ -33,6 +35,12 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
     },
+  },
+
+  {
+    // Scripts de tooling: corren en Node, no en el Worker.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
   },
 
   // Prettier último: apaga todo lo que sea de formato.

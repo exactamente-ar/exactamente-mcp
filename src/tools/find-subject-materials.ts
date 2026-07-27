@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { type InferSchema, type ToolMetadata } from 'xmcp';
-import { ApiClientError, type Resource, type Subject } from '../client/exactamenteApi';
+import {
+  ApiClientError,
+  hasResourceCounts,
+  type AnySubject,
+  type Resource,
+} from '../client/exactamenteApi';
 import {
   clampLimit,
   exactamenteApiClient,
@@ -43,7 +48,9 @@ export const metadata: ToolMetadata = {
 };
 
 interface SubjectMaterials {
-  subject: Subject;
+  // Puede venir del listado (con resourceCounts) o del detalle (sin él), según
+  // se haya filtrado por subjectId o no. Ver la nota en exactamenteApi.ts.
+  subject: AnySubject;
   resources: Resource[];
   resourceTotal?: number;
   resourcePage?: number;
@@ -85,7 +92,7 @@ function buildNextActions(results: SubjectMaterials[]): ToolNextAction[] {
 }
 
 function formatSubjectLine(result: SubjectMaterials): string {
-  const counts = result.subject.resourceCounts
+  const counts = hasResourceCounts(result.subject)
     ? `known counts: resumen ${result.subject.resourceCounts.resumen}, parcial ${result.subject.resourceCounts.parcial}, final ${result.subject.resourceCounts.final}`
     : 'known counts: unavailable';
   const resources = result.resources.length
