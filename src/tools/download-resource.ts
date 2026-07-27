@@ -1,27 +1,27 @@
-import { z } from "zod";
-import { type InferSchema, type ToolMetadata } from "xmcp";
-import { exactamenteApiClient, toToolError } from "../lib/toolShared";
+import { z } from 'zod';
+import { type InferSchema, type ToolMetadata } from 'xmcp';
+import { exactamenteApiClient, toToolError } from '../lib/toolShared';
 
 export const schema = {
   resourceId: z
     .string()
     .min(1)
-    .describe("The resource UUID to download. Use the id returned by list-resources."),
+    .describe('The resource UUID to download. Use the id returned by list-resources.'),
   subjectId: z
     .string()
     .optional()
-    .describe("Optional subject UUID hint from list-resources. When provided, lookup is faster."),
+    .describe('Optional subject UUID hint from list-resources. When provided, lookup is faster.'),
 };
 
 export const metadata: ToolMetadata = {
-  name: "download-resource",
-  description: "Get the download URL for a published resource file by its UUID",
+  name: 'download-resource',
+  description: 'Get the download URL for a published resource file by its UUID',
   annotations: {
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
-    title: "Get resource download URL",
+    title: 'Get resource download URL',
   },
 };
 
@@ -30,9 +30,9 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
     const resourceIdInput = args.resourceId as unknown;
     let resourceId: string;
 
-    if (typeof resourceIdInput === "string") {
+    if (typeof resourceIdInput === 'string') {
       resourceId = resourceIdInput;
-    } else if (resourceIdInput && typeof resourceIdInput === "object") {
+    } else if (resourceIdInput && typeof resourceIdInput === 'object') {
       const obj = resourceIdInput as { id?: string };
       if (obj.id) {
         resourceId = obj.id;
@@ -44,7 +44,7 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
     }
 
     if (!resourceId) {
-      throw new Error("Missing resourceId parameter");
+      throw new Error('Missing resourceId parameter');
     }
 
     const baseResourceFilters = args.subjectId
@@ -75,7 +75,7 @@ export default async function downloadResource(args: InferSchema<typeof schema>)
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: `Resource: ${resource.title}\nType: ${resource.type}\nDownload URL: ${resource.fileUrl}`,
         },
       ],

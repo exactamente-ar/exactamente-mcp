@@ -1,0 +1,43 @@
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: '*.{ts,js,mjs,json,jsonc,md}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+      skip:
+        - merge
+        - rebase
+    lint:
+      glob: '*.ts'
+      run: pnpm exec eslint {staged_files}
+      skip:
+        - merge
+        - rebase
+    test:
+      glob: '*.ts'
+      run: pnpm exec vitest run --changed
+      skip:
+        - merge
+        - rebase
+
+pre-push:
+  commands:
+    typecheck:
+      run: pnpm typecheck
+      skip:
+        - merge
+        - rebase
+    test:
+      run: pnpm test
+      skip:
+        - merge
+        - rebase
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}
+      skip:
+        - merge
+        - rebase

@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import xmcpWorker from "../worker.js";
+import xmcpWorker from '../worker.js';
 
 interface Env {
   OPENAI_APPS_VERIFICATION_TOKEN?: string;
@@ -11,9 +11,9 @@ const CSP = "default-src 'none'; connect-src https://api.exactamente.com.ar";
 
 function addSecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
-  headers.set("Content-Security-Policy", CSP);
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("X-Frame-Options", "DENY");
+  headers.set('Content-Security-Policy', CSP);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -22,28 +22,21 @@ function addSecurityHeaders(response: Response): Response {
 }
 
 export default {
-  async fetch(
-    request: Request,
-    env: Env,
-    ctx: ExecutionContext,
-  ): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    if (
-      url.pathname === "/.well-known/openai-apps-challenge" &&
-      request.method === "GET"
-    ) {
+    if (url.pathname === '/.well-known/openai-apps-challenge' && request.method === 'GET') {
       const token = env.OPENAI_APPS_VERIFICATION_TOKEN;
       if (token) {
         return new Response(token, {
           status: 200,
           headers: {
-            "Content-Type": "text/plain",
-            "Content-Security-Policy": CSP,
+            'Content-Type': 'text/plain',
+            'Content-Security-Policy': CSP,
           },
         });
       }
-      return new Response("Not configured", { status: 404 });
+      return new Response('Not configured', { status: 404 });
     }
 
     const response = await xmcpWorker.fetch(request, env, ctx);

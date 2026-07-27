@@ -5,9 +5,10 @@
   "compatibility_date": "2025-05-29",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
   "vars": {
-    "EXACTAMENTE_API_BASE_URL": "https://api.exactamente.com.ar"
-  }
+    "EXACTAMENTE_API_BASE_URL": "https://api.exactamente.com.ar",
+  },
+  "routes": [{ "pattern": "mcp.exactamente.com.ar", "custom_domain": true }],
 }

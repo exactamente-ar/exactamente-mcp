@@ -71,7 +71,10 @@ Tool responses include `structuredContent.agentHints.nextActions` where useful, 
 Compact material search:
 
 ```json
-{ "tool": "find-subject-materials", "args": { "search": "algoritmos", "type": "parcial", "limit": 5 } }
+{
+  "tool": "find-subject-materials",
+  "args": { "search": "algoritmos", "type": "parcial", "limit": 5 }
+}
 ```
 
 Manual resource lookup:
@@ -114,6 +117,7 @@ npm run deploy:secret
 ```
 
 The worker wrapper (`src/worker.ts`) adds:
+
 - `/.well-known/openai-apps-challenge` route for domain verification
 - Content Security Policy headers (`default-src 'none'; connect-src https://api.exactamente.com.ar`)
 - Security headers (`X-Content-Type-Options`, `X-Frame-Options`)
@@ -149,6 +153,7 @@ npx wrangler dev
 ## ChatGPT Apps submission
 
 See [CHATGPT_SUBMISSION.md](./CHATGPT_SUBMISSION.md) for:
+
 - Deployment steps
 - Submission form field values
 - Test prompts and expected responses

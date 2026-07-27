@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { type InferSchema, type ToolMetadata } from "xmcp";
+import { z } from 'zod';
+import { type InferSchema, type ToolMetadata } from 'xmcp';
 import {
   clampLimit,
   createPaginationHints,
@@ -7,32 +7,34 @@ import {
   exactamenteApiClient,
   readOnlyAnnotations,
   toToolError,
-} from "../lib/toolShared";
+} from '../lib/toolShared';
 
 export const schema = {
   subjectId: z
     .string()
     .optional()
-    .describe("Optional subject UUID filter. Use the subject id returned by search-subjects or get-subject."),
+    .describe(
+      'Optional subject UUID filter. Use the subject id returned by search-subjects or get-subject.',
+    ),
   type: z
-    .enum(["resumen", "parcial", "final"])
+    .enum(['resumen', 'parcial', 'final'])
     .optional()
-    .describe("Optional resource type filter"),
-  page: z.number().int().min(1).optional().describe("Page number (starts at 1)"),
+    .describe('Optional resource type filter'),
+  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe("Items per page (capped by server configuration)"),
+    .describe('Items per page (capped by server configuration)'),
 };
 
 export const metadata: ToolMetadata = {
-  name: "list-resources",
-  description: "List published resources, optionally filtered by subject or type",
+  name: 'list-resources',
+  description: 'List published resources, optionally filtered by subject or type',
   annotations: {
     ...readOnlyAnnotations,
-    title: "List resources",
+    title: 'List resources',
   },
 };
 
@@ -45,30 +47,28 @@ export default async function listResources(args: InferSchema<typeof schema>) {
     });
 
     const nextActions = response.data.map((r) => ({
-      tool: "download-resource",
+      tool: 'download-resource',
       args: { resourceId: r.id, subjectId: r.subjectId },
       reason: `Download ${r.title}.`,
     }));
     const pagination = createPaginationHints(
-      "list-resources",
+      'list-resources',
       { ...args, limit },
       response.page,
-      response.totalPages
+      response.totalPages,
     );
     const resourceList = response.data
       .map((r) => {
-        const date = r.examYear
-          ? ` ${r.examMonth ? `${r.examMonth}/` : ""}${r.examYear}`
-          : "";
-        const topic = r.topic ? ` tema ${r.topic}` : "";
+        const date = r.examYear ? ` ${r.examMonth ? `${r.examMonth}/` : ''}${r.examYear}` : '';
+        const topic = r.topic ? ` tema ${r.topic}` : '';
         return `${r.id} — ${r.title} [subject ${r.subjectId}; ${r.subtype ?? r.type}${date}${topic}]`;
       })
-      .join("\n");
+      .join('\n');
 
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: `Found ${response.total ?? response.data.length} resources:\n${resourceList}${formatPaginationSuffix(response.page, response.totalPages)}`,
         },
       ],

@@ -1,16 +1,16 @@
-import { z } from "zod";
-import { type InferSchema, type ResourceMetadata } from "xmcp";
-import { exactamenteApiClient, toToolError } from "../../../lib/toolShared";
+import { z } from 'zod';
+import { type InferSchema, type ResourceMetadata } from 'xmcp';
+import { exactamenteApiClient, toToolError } from '../../../lib/toolShared';
 
 export const schema = {
-  subjectId: z.string().min(1).describe("Subject UUID"),
+  subjectId: z.string().min(1).describe('Subject UUID'),
 };
 
 export const metadata: ResourceMetadata = {
-  name: "subject-details",
-  title: "Subject details",
-  description: "Read-only subject details with career associations",
-  mimeType: "application/json",
+  name: 'subject-details',
+  title: 'Subject details',
+  description: 'Read-only subject details with career associations',
+  mimeType: 'application/json',
 };
 
 export default async function details({ subjectId }: InferSchema<typeof schema>) {

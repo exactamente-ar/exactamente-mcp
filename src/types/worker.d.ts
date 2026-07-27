@@ -1,4 +1,4 @@
-declare module "*/worker.js" {
+declare module '*/worker.js' {
   const worker: {
     fetch(request: Request, env: unknown, ctx: ExecutionContext): Promise<Response>;
   };
