@@ -697,7 +697,7 @@ export interface components {
             urlMoodle: string;
             /** @description Puede ser cadena vacía, nunca null */
             urlPrograma: string;
-            /** @description Año de cursada en el plan (1–5) */
+            /** @description Año de cursada en el plan */
             year: number;
             /** @description 1 o 2 */
             quadmester: number;
@@ -733,7 +733,7 @@ export interface components {
             urlMoodle: string;
             /** @description Puede ser cadena vacía, nunca null */
             urlPrograma: string;
-            /** @description Año de cursada en el plan (1–5) */
+            /** @description Año de cursada en el plan */
             year: number;
             /** @description 1 o 2 */
             quadmester: number;
@@ -755,7 +755,7 @@ export interface components {
             urlMoodle: string;
             /** @description Puede ser cadena vacía, nunca null */
             urlPrograma: string;
-            /** @description Año de cursada en el plan (1–5) */
+            /** @description Año de cursada en el plan */
             year: number;
             /** @description 1 o 2 */
             quadmester: number;
@@ -776,7 +776,7 @@ export interface components {
             urlMoodle: string;
             /** @description Puede ser cadena vacía, nunca null */
             urlPrograma: string;
-            /** @description Año de cursada en el plan (1–5) */
+            /** @description Año de cursada en el plan */
             year: number;
             /** @description 1 o 2 */
             quadmester: number;
@@ -3697,7 +3697,7 @@ export interface operations {
                         urlMoodle: string;
                         /** @description Puede ser cadena vacía, nunca null */
                         urlPrograma: string;
-                        /** @description Año de cursada en el plan (1–5) */
+                        /** @description Año de cursada en el plan */
                         year: number;
                         /** @description 1 o 2 */
                         quadmester: number;
@@ -3773,7 +3773,7 @@ export interface operations {
                         urlMoodle: string;
                         /** @description Puede ser cadena vacía, nunca null */
                         urlPrograma: string;
-                        /** @description Año de cursada en el plan (1–5) */
+                        /** @description Año de cursada en el plan */
                         year: number;
                         /** @description 1 o 2 */
                         quadmester: number;
@@ -3917,7 +3917,7 @@ export interface operations {
                         urlMoodle: string;
                         /** @description Puede ser cadena vacía, nunca null */
                         urlPrograma: string;
-                        /** @description Año de cursada en el plan (1–5) */
+                        /** @description Año de cursada en el plan */
                         year: number;
                         /** @description 1 o 2 */
                         quadmester: number;
