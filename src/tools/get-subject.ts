@@ -32,9 +32,15 @@ export default async function getSubject({ subjectId }: InferSchema<typeof schem
           .map((c) => `${c.careerName}, plan ${c.planId} (${c.year}A${c.quadmester})`)
           .join('; ')
       : '(sin carreras asociadas)';
-    const resources = s.resourceCounts
-      ? `Resumenes: ${s.resourceCounts.resumen}, Parciales: ${s.resourceCounts.parcial}, Finales: ${s.resourceCounts.final}`
-      : 'Recursos: desconocido';
+    // `GET /subjects/:id` no devuelve `resourceCounts` — solo lo hace el
+    // listado. Esto era un ternario sobre `s.resourceCounts` que SIEMPRE caía
+    // en la rama de "desconocido"; el tipo lo tenía opcional y nadie lo notó
+    // hasta que los tipos pasaron a generarse del contrato real.
+    //
+    // Se preserva la salida tal cual estaba. Para dar los conteros de verdad
+    // hay que agregarlos al endpoint de detalle en el backend, o pedirlos con
+    // list-resources.
+    const resources = 'Recursos: desconocido (usá list-resources para contarlos)';
     const details = `${s.id} — ${s.title}
 Año: ${s.year}, Cuatrimestre: ${s.quadmester}
 Slug: ${s.slug}

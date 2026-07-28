@@ -5,3 +5,7 @@ node_modules
 pnpm-lock.yaml
 worker.js
 xmcp-env.d.ts
+
+# Generado por `pnpm gen:api`. Su formato lo define openapi-typescript; si
+# Prettier también lo toca, el gate de CI nunca queda verde.
+src/types/api.d.ts

@@ -22,7 +22,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start-http": "node dist/http.js",
-    "start-stdio": "node dist/stdio.js"
+    "start-stdio": "node dist/stdio.js",
+    "gen:api": "node scripts/gen-api-types.mjs",
+    "check:api": "node scripts/gen-api-types.mjs --check"
   },
   "dependencies": {
     "xmcp": "^0.6.7",
@@ -38,6 +40,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.8.0",
     "lefthook": "^2.1.10",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",

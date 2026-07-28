@@ -20,88 +20,55 @@ export class ApiClientError extends Error {
   }
 }
 
+import type { components } from '../types/api';
+
+/**
+ * Los tipos del contrato vienen GENERADOS del OpenAPI del backend
+ * (`pnpm gen:api`). No se escriben a mano: si el backend cambia un campo,
+ * este repo deja de compilar hasta regenerar, que es exactamente la idea.
+ *
+ * Antes eran interfaces propias con casi todo opcional — la forma de escribir
+ * tipos cuando no confiás en el contrato. A `Resource`, por ejemplo, le
+ * faltaba `examDay`.
+ */
+type Schemas = components['schemas'];
+
+export type University = Schemas['University'];
+export type Faculty = Schemas['Faculty'];
+export type Career = Schemas['Career'];
+export type Resource = Schemas['Resource'];
+
+/**
+ * ⚠️ Dos formas distintas de materia, según de dónde venga:
+ *
+ *   GET /subjects      → Subject        · incluye `resourceCounts`
+ *   GET /subjects/:id  → SubjectDetail  · NO lo incluye
+ *
+ * No es un capricho del tipado: el backend devuelve cosas distintas. Antes esto
+ * era una sola interface con `resourceCounts?` opcional, y por eso nadie notó
+ * que `get-subject` leía un campo que ese endpoint nunca manda.
+ */
+export type Subject = Schemas['SubjectWithCareers'];
+export type SubjectDetail = Schemas['SubjectDetail'];
+export type AnySubject = Subject | SubjectDetail;
+
+export type SubjectDetailsResponse = { subject: SubjectDetail };
+
+/** Narrowing para el código que acepta cualquiera de las dos formas. */
+export function hasResourceCounts(subject: AnySubject): subject is Subject {
+  return 'resourceCounts' in subject;
+}
+
+/**
+ * Envoltorio de las listas. `total`, `page` y `totalPages` son opcionales
+ * porque `GET /careers` no pagina y devuelve `{ data }` a secas — ver la nota
+ * en los schemas del backend.
+ */
 interface ListResponse<T> {
   data: T[];
   total?: number;
   page?: number;
   totalPages?: number;
-}
-
-export interface University {
-  id: string;
-  name: string;
-  shortName?: string | null;
-  slug: string;
-  createdAt: string;
-}
-
-export interface Faculty {
-  id: string;
-  universityId: string;
-  name: string;
-  shortName?: string | null;
-  slug: string;
-  createdAt: string;
-}
-
-export interface Career {
-  id: string;
-  facultyId: string;
-  name: string;
-  shortName?: string | null;
-  slug: string;
-  createdAt: string;
-}
-
-export interface Subject {
-  id: string;
-  facultyId: string;
-  title: string;
-  slug: string;
-  description?: string | null;
-  urlMoodle?: string | null;
-  urlPrograma?: string | null;
-  year: number;
-  quadmester: number;
-  createdAt: string;
-  updatedAt: string;
-  careers?: Array<{
-    careerId: string;
-    careerName: string;
-    facultyId: string;
-    facultyName: string;
-    universityId: string;
-    universityName: string;
-    planId: string;
-    year: number;
-    quadmester: number;
-  }>;
-  resourceCounts?: {
-    resumen: number;
-    parcial: number;
-    final: number;
-  };
-}
-
-export interface SubjectDetailsResponse {
-  subject: Subject;
-}
-
-export interface Resource {
-  id: string;
-  subjectId: string;
-  title: string;
-  type: 'resumen' | 'parcial' | 'final';
-  subtype?: 'parcial' | 'recuperatorio' | 'prefinal' | 'parcialito' | null;
-  status?: string;
-  examYear?: number | null;
-  examMonth?: number | null;
-  topic?: number | null;
-  notes?: string | null;
-  downloadCount?: number;
-  publishedAt?: string | null;
-  createdAt: string;
-  fileUrl?: string | null;
 }
 
 export interface PaginationFilters {
