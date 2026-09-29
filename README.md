@@ -119,7 +119,8 @@ npm run deploy:secret
 The worker wrapper (`src/worker.ts`) adds:
 
 - `/.well-known/openai-apps-challenge` route for domain verification
-- Content Security Policy headers (`default-src 'none'; connect-src https://api.exactamente.com.ar`)
+- A getting-started page on `GET /` when the request accepts `text/html`. Browser visits to `https://mcp.exactamente.com.ar/` show client config cards (Cursor, Claude Code, Claude Desktop, Windsurf, Gemini CLI and Codex). Clicking a card copies that client's snippet. MCP calls, including `POST /` and anything under `/mcp`, skip the page.
+- Content Security Policy headers (`default-src 'none'; connect-src https://api.exactamente.com.ar`) on protocol responses. The HTML page keeps those directives and adds hashed `style-src` / `script-src` so its inline assets can run.
 - Security headers (`X-Content-Type-Options`, `X-Frame-Options`)
 
 ### Local development with Cloudflare
