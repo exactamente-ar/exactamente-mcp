@@ -9,3 +9,7 @@ xmcp-env.d.ts
 # Generado por `pnpm gen:api`. Su formato lo define openapi-typescript; si
 # Prettier también lo toca, el gate de CI nunca queda verde.
 src/types/api.d.ts
+
+# Lo escribe release-please en cada Release PR; si Prettier lo reformatea,
+# el siguiente release vuelve a pisarlo.
+CHANGELOG.md
