@@ -43,8 +43,14 @@ describe('renderLandingPage', () => {
     expect(html).toContain('materias');
     expect(html).toContain('recursos');
 
-    const cards = html.match(/<button type="button" class="client-card"/g) ?? [];
+    const cards = html.match(/<article class="client-card"/g) ?? [];
     expect(cards).toHaveLength(6);
+    const buttons =
+      html.match(/<button type="button" class="copy-button"[\s\S]*?<\/button>/g) ?? [];
+    expect(buttons).toHaveLength(6);
+    for (const button of buttons) {
+      expect(button).not.toContain('<pre');
+    }
     for (const name of [
       'Cursor',
       'Claude Code',
@@ -65,6 +71,7 @@ describe('renderLandingPage', () => {
       6,
     );
     expect(html).toContain('navigator.clipboard.writeText');
+    expect(html).toContain('No se pudo copiar');
 
     expect(contentSecurityPolicy).toContain("default-src 'none'");
     expect(contentSecurityPolicy).toContain('connect-src https://api.exactamente.com.ar');

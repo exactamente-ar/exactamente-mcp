@@ -78,11 +78,11 @@ h2 { margin: 0 0 8px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow: var(--shadow);
-  cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 .client-card:hover { transform: translateY(-3px); border-color: rgba(96, 165, 250, 0.55); }
 .client-card[data-copied="true"] { border-color: var(--orange); }
+.client-card[data-copied="false"] { border-color: #f87171; }
 .client-name { font-size: 1.15rem; font-weight: 700; }
 .client-path { color: var(--muted); font-size: 0.84rem; }
 pre {
@@ -96,8 +96,21 @@ pre {
   line-height: 1.45;
 }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.copy-state { color: var(--blue); font-size: 0.82rem; font-weight: 650; }
-.client-card[data-copied="true"] .copy-state { color: var(--orange); }
+.copy-button {
+  align-self: flex-start;
+  margin: 0;
+  padding: 6px 12px;
+  color: var(--blue);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.client-card[data-copied="true"] .copy-button { color: var(--orange); }
+.client-card[data-copied="false"] .copy-button { color: #f87171; }
 footer { padding: 0 0 40px; color: var(--muted); font-size: 0.9rem; }
 @media (min-width: 720px) {
   .cards { grid-template-columns: 1fr 1fr; }
@@ -114,19 +127,30 @@ footer { padding: 0 0 40px; color: var(--muted); font-size: 0.9rem; }
 
 const SCRIPT = `
 document.querySelectorAll(".client-card").forEach(function (card) {
-  card.addEventListener("click", function () {
-    var code = card.querySelector("code");
-    var label = card.querySelector(".copy-state");
-    if (!code || !label) return;
-    var previous = label.textContent;
+  var code = card.querySelector("code");
+  var button = card.querySelector(".copy-button");
+  if (!code || !button) return;
+  var initial = button.textContent;
+  var timer;
+  function show(ok, text) {
+    button.textContent = text;
+    card.setAttribute("data-copied", ok ? "true" : "false");
+    window.clearTimeout(timer);
+    timer = window.setTimeout(function () {
+      button.textContent = initial;
+      card.removeAttribute("data-copied");
+    }, ok ? 1600 : 4000);
+  }
+  function fail() {
+    var selection = window.getSelection();
+    if (selection) selection.selectAllChildren(code);
+    show(false, "No se pudo copiar: el texto quedó seleccionado");
+  }
+  button.addEventListener("click", function () {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) return fail();
     navigator.clipboard.writeText(code.textContent || "").then(function () {
-      label.textContent = "Copiado";
-      card.setAttribute("data-copied", "true");
-      window.setTimeout(function () {
-        label.textContent = previous;
-        card.removeAttribute("data-copied");
-      }, 1600);
-    });
+      show(true, "Copiado");
+    }, fail);
   });
 });
 `.trim();
@@ -145,12 +169,12 @@ export async function renderLandingPage(
   const cards = clientCards
     .map((client) => {
       const snippet = escapeHtml(client.snippet(mcpEndpoint));
-      return `<button type="button" class="client-card">
+      return `<article class="client-card">
 <span class="client-name">${escapeHtml(client.name)}</span>
 <span class="client-path">${escapeHtml(client.path)}</span>
 <pre><code>${snippet}</code></pre>
-<span class="copy-state">Copiar configuración</span>
-</button>`;
+<button type="button" class="copy-button" aria-live="polite">Copiar configuración</button>
+</article>`;
     })
     .join('\n');
 
@@ -176,7 +200,7 @@ export async function renderLandingPage(
 </section>
 <section class="section" id="conectar">
 <h2>Conectá un cliente</h2>
-<p>Tocá una tarjeta para copiar la configuración. Pegala en el archivo de tu cliente y reconectá. El transporte HTTP queda en <code>/mcp</code>.</p>
+<p>Copiá la configuración de tu cliente. Pegala en el archivo de tu cliente y reconectá. El transporte HTTP queda en <code>/mcp</code>.</p>
 <div class="cards">
 ${cards}
 </div>
