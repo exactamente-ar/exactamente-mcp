@@ -1,9 +1,12 @@
 /// <reference types="@cloudflare/workers-types" />
 import xmcpWorker from '../worker.js';
+import { enforceRateLimit } from './lib/rateLimit';
 
 interface Env {
   OPENAI_APPS_VERIFICATION_TOKEN?: string;
   EXACTAMENTE_API_BASE_URL?: string;
+  /** Binding `ratelimits` de wrangler.jsonc. Ausente en dev local: no-op. */
+  MCP_RATE_LIMITER?: RateLimit;
   [key: string]: unknown;
 }
 
@@ -38,6 +41,9 @@ export default {
       }
       return new Response('Not configured', { status: 404 });
     }
+
+    const limited = await enforceRateLimit(request, env.MCP_RATE_LIMITER);
+    if (limited) return addSecurityHeaders(limited);
 
     const response = await xmcpWorker.fetch(request, env, ctx);
     return addSecurityHeaders(response);

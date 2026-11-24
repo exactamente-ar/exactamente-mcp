@@ -10,18 +10,26 @@ import {
 } from '../lib/toolShared';
 
 export const schema = {
-  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
+  page: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      'Page number, starting at 1. Use agentHints.pagination.nextPageAction to get the next page.',
+    ),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe('Items per page (capped by server configuration)'),
+    .describe('Items per page, from 1 to 50 (larger values are capped at 50).'),
 };
 
 export const metadata: ToolMetadata = {
   name: 'list-universities',
-  description: 'List available universities from Exactamente',
+  description:
+    'List the Argentine universities that have materials on Exactamente. Use it as the first step when browsing by institution, to get a universityId for list-faculties. Paginated (page, limit up to 50); returns each university with its id, name and short name.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'List universities',

@@ -18,7 +18,7 @@ Requirements:
 ```bash
 git clone https://github.com/<your-username>/exactamente-mcp.git
 cd exactamente-mcp
-npm install
+pnpm install   # never npm: it breaks `gen:api`
 cp .env.example .env
 ```
 
@@ -27,14 +27,14 @@ Adjust `.env` if you want to point at a local backend (`EXACTAMENTE_API_BASE_URL
 Run the dev server:
 
 ```bash
-npm run dev          # local stdio + HTTP transport
-npm run dev:cf       # Cloudflare Workers local dev
+pnpm dev             # local stdio + HTTP transport
+pnpm dev:cf          # Cloudflare Workers local dev
 ```
 
 ## Workflow
 
 1. Fork the repository
-2. Create a branch from `master`:
+2. Create a branch from `main`:
    ```bash
    git checkout -b feat/short-description
    git checkout -b fix/bug-description
@@ -42,11 +42,13 @@ npm run dev:cf       # Cloudflare Workers local dev
 3. Make your changes
 4. Verify everything passes:
    ```bash
-   npm run typecheck
-   npm run test
+   pnpm typecheck
+   pnpm lint
+   pnpm format:check
+   pnpm test
    ```
 5. Commit and push
-6. Open a Pull Request against `master`
+6. Open a Pull Request against `main`
 
 ## Code conventions
 
@@ -110,7 +112,7 @@ If you need to touch any of these, explain why in the PR.
 - Clear title: `feat: add list-career-plans tool`, `fix: clamp page limit in list-resources`
 - Describe what changes and why
 - If you're adding/changing a tool, include an example invocation in the PR body
-- `npm run typecheck` and `npm run test` must pass before requesting review
+- `pnpm typecheck`, `pnpm lint`, `pnpm format:check` and `pnpm test` must pass before requesting review
 
 ## Reporting a bug
 

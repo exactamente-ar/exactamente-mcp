@@ -75,4 +75,34 @@ describe('download-resource', () => {
     expect(structured.title).toBe('Parcial 2024');
     expect(structured.type).toBe('parcial');
   });
+  it('requires subjectId so a lookup never scans the whole catalogue', async () => {
+    const { schema, default: downloadResource } = await import('../tools/download-resource');
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+    expect(schema.subjectId.safeParse(undefined).success).toBe(false);
+    await expect(downloadResource({ resourceId: 'r1', subjectId: '' } as never)).rejects.toThrow(
+      '[validation_error]',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('caps how many pages of a subject it scans before giving up', async () => {
+    const { default: downloadResource, MAX_LOOKUP_PAGES } =
+      await import('../tools/download-resource');
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ data: [], total: 5000, page: 1, totalPages: 50 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+
+    await expect(downloadResource({ resourceId: 'missing', subjectId: 'A1C1M1' })).rejects.toThrow(
+      '[not_found]',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(MAX_LOOKUP_PAGES);
+    for (const call of fetchMock.mock.calls) {
+      expect(String(call[0])).toContain('subjectId=A1C1M1');
+    }
+  });
 });

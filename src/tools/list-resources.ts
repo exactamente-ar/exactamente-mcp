@@ -14,24 +14,32 @@ export const schema = {
     .string()
     .optional()
     .describe(
-      'Optional subject UUID filter. Use the subject id returned by search-subjects or get-subject.',
+      'Only resources of this subject (subject id from search-subjects or find-subject-materials). Strongly recommended: without it the whole catalogue is listed.',
     ),
   type: z
     .enum(['resumen', 'parcial', 'final'])
     .optional()
-    .describe('Optional resource type filter'),
-  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
+    .describe('Resource type: resumen (summary), parcial (midterm exam) or final (final exam).'),
+  page: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      'Page number, starting at 1. Use agentHints.pagination.nextPageAction to get the next page.',
+    ),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe('Items per page (capped by server configuration)'),
+    .describe('Items per page, from 1 to 50 (larger values are capped at 50).'),
 };
 
 export const metadata: ToolMetadata = {
   name: 'list-resources',
-  description: 'List published resources, optionally filtered by subject or type',
+  description:
+    'List the published study resources of a subject: resúmenes (summaries), parciales (midterm exams) and finales (final exams), newest first. Use it to see or page through every resource of a known subject; to find materials by subject name in one step use find-subject-materials. Paginated (page, limit up to 50); returns each resource with its id, subjectId, title, type, exam date and topic, ready for download-resource.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'List resources',

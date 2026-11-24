@@ -27,7 +27,7 @@ Workflow recomendado:
 2. Si ya tienes subjectId, usa list-resources con { subjectId, type: "parcial" }.
 3. Filtra por examYear, topic, title o notes cuando el usuario haya pedido año/tema.
 4. Descarga con download-resource usando { resourceId, subjectId }.
-5. Informa al usuario el title, filePath, size y si alreadyExisted era true.
+5. Informa al usuario el title y el downloadUrl que devuelve download-resource.
 
 No uses subjectId como resourceId. resourceId siempre es el id del recurso listado.`;
 }
