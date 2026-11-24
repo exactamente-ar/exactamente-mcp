@@ -10,23 +10,53 @@ import {
 } from '../lib/toolShared';
 
 export const schema = {
-  careerId: z.string().optional().describe('Optional career UUID filter'),
-  facultyId: z.string().optional().describe('Optional faculty UUID filter'),
-  year: z.number().int().min(1).max(5).optional().describe('Academic year (1-5)'),
-  quadmester: z.number().int().min(1).max(2).optional().describe('Academic quadmester (1-2)'),
-  search: z.string().min(1).optional().describe('Free text search over subject title'),
-  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
+  careerId: z
+    .string()
+    .optional()
+    .describe('Only subjects of this career (career id from list-careers).'),
+  facultyId: z
+    .string()
+    .optional()
+    .describe('Only subjects of this faculty (faculty id from list-faculties).'),
+  year: z
+    .number()
+    .int()
+    .min(1)
+    .max(5)
+    .optional()
+    .describe('Year of the degree plan the subject belongs to, from 1 to 5.'),
+  quadmester: z
+    .number()
+    .int()
+    .min(1)
+    .max(2)
+    .optional()
+    .describe('Cuatrimestre (half-year term) within that year: 1 or 2.'),
+  search: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Free-text search over subject titles, e.g. "algebra" or "análisis matemático".'),
+  page: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      'Page number, starting at 1. Use agentHints.pagination.nextPageAction to get the next page.',
+    ),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe('Items per page (capped by server configuration)'),
+    .describe('Items per page, from 1 to 50 (larger values are capped at 50).'),
 };
 
 export const metadata: ToolMetadata = {
   name: 'search-subjects',
-  description: 'Search and filter subjects by career, faculty, year and text',
+  description:
+    'Search subjects (materias) by title text and/or filter them by career, faculty, year and cuatrimestre. Use it to find a subject id or to list the subjects of a career; to get a subject together with its materials in one call use find-subject-materials. All filters are optional and combinable; paginated (page, limit up to 50). Returns each subject with its id, year, careers and counts of resúmenes, parciales and finales.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'Search subjects',

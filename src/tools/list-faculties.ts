@@ -10,19 +10,30 @@ import {
 } from '../lib/toolShared';
 
 export const schema = {
-  universityId: z.string().optional().describe('Optional university UUID to filter faculties'),
-  page: z.number().int().min(1).optional().describe('Page number (starts at 1)'),
+  universityId: z
+    .string()
+    .optional()
+    .describe('Only faculties of this university (university id from list-universities).'),
+  page: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe(
+      'Page number, starting at 1. Use agentHints.pagination.nextPageAction to get the next page.',
+    ),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe('Items per page (capped by server configuration)'),
+    .describe('Items per page, from 1 to 50 (larger values are capped at 50).'),
 };
 
 export const metadata: ToolMetadata = {
   name: 'list-faculties',
-  description: 'List faculties, optionally filtered by university',
+  description:
+    'List the faculties (facultades) on Exactamente, optionally only those of one university. Use it to resolve a faculty name into a facultyId for list-careers or search-subjects. Paginated (page, limit up to 50); returns each faculty with its id, name and short name.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'List faculties',

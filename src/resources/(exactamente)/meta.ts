@@ -59,7 +59,7 @@ export default function meta() {
                 resourceId: '<resource.id>',
                 subjectId: '<subject.id>',
               },
-              produces: 'local file path',
+              produces: 'downloadUrl',
             },
           ],
         },
@@ -90,8 +90,10 @@ export default function meta() {
         'List tools accept page and limit. If totalPages is greater than page, call the same tool with page + 1. Limits are capped by server configuration.',
       limitations: [
         'This MCP does not mutate upstream Exactamente data.',
-        'download-resource writes a file to the local downloads directory, so it is not read-only.',
-        'There is no direct backend endpoint for get-resource; download-resource looks up resources through list-resources.',
+        'download-resource only returns a public URL; it does not download or store files.',
+        'download-resource requires subjectId: there is no backend endpoint to fetch a resource by id, so it looks the resource up among the resources of that subject.',
+        'find-subject-materials inspects at most 10 subjects per call.',
+        'The public /mcp endpoint is rate limited per IP (HTTP 429 with Retry-After when exceeded).',
       ],
       notes:
         'Prefer structuredContent and agentHints.nextActions over parsing human-readable text.',

@@ -3,12 +3,16 @@ import { type InferSchema, type ToolMetadata } from 'xmcp';
 import { exactamenteApiClient, readOnlyAnnotations, toToolError } from '../lib/toolShared';
 
 export const schema = {
-  subjectId: z.string().min(1).describe('Subject UUID'),
+  subjectId: z
+    .string()
+    .min(1)
+    .describe('Subject id, as returned by search-subjects or find-subject-materials.'),
 };
 
 export const metadata: ToolMetadata = {
   name: 'get-subject',
-  description: 'Get detailed information for one subject',
+  description:
+    'Get the details of one subject (materia) by its id: title, year and cuatrimestre, description, and the careers and study plans it belongs to. Use it when the user asks about a specific subject rather than its materials; for materials use find-subject-materials or list-resources. Returns the subject record; resource counts are not included here.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'Get subject details',

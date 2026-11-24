@@ -3,7 +3,8 @@ import { exactamenteApiClient, readOnlyAnnotations, toToolError } from '../lib/t
 
 export const metadata: ToolMetadata = {
   name: 'health-check',
-  description: 'Check Exactamente backend health status',
+  description:
+    'Check whether the Exactamente backend API is reachable. Use it only to diagnose failures (for example after an upstream_error), not before regular queries. Takes no parameters and returns the backend status and server timestamp.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'Health check',

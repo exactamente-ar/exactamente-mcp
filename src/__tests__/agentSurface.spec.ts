@@ -16,8 +16,29 @@ import explorarCarrera, {
   metadata as explorarCarreraMetadata,
   schema as explorarCarreraSchema,
 } from '../prompts/explorar-carrera';
-import findSubjectMaterials from '../tools/find-subject-materials';
+import findSubjectMaterials, { MAX_SUBJECT_FANOUT } from '../tools/find-subject-materials';
 import searchSubjects from '../tools/search-subjects';
+import * as downloadResourceTool from '../tools/download-resource';
+import * as findSubjectMaterialsTool from '../tools/find-subject-materials';
+import * as getSubjectTool from '../tools/get-subject';
+import * as healthCheckTool from '../tools/health-check';
+import * as listCareersTool from '../tools/list-careers';
+import * as listFacultiesTool from '../tools/list-faculties';
+import * as listResourcesTool from '../tools/list-resources';
+import * as listUniversitiesTool from '../tools/list-universities';
+import * as searchSubjectsTool from '../tools/search-subjects';
+
+const allTools = [
+  downloadResourceTool,
+  findSubjectMaterialsTool,
+  getSubjectTool,
+  healthCheckTool,
+  listCareersTool,
+  listFacultiesTool,
+  listResourcesTool,
+  listUniversitiesTool,
+  searchSubjectsTool,
+];
 
 const emptyFindSubjectMaterialsArgs = {
   subjectId: undefined,
@@ -46,8 +67,36 @@ describe('exactamente meta resource', () => {
     expect(data.prompts).toContain('buscar-materiales-de-materia');
     expect(data.canonicalWorkflows.length).toBeGreaterThan(0);
     expect(data.domainModel.subject).toContain('subjectId');
-    expect(data.limitations.join(' ')).toContain('download-resource writes');
+    expect(data.limitations.join(' ')).not.toContain('download-resource writes');
+    expect(data.limitations.join(' ')).toContain('download-resource requires subjectId');
   });
+});
+
+describe('tool descriptions', () => {
+  it.each(allTools.map((tool) => [tool.metadata.name, tool] as const))(
+    '%s has a directory-quality description',
+    (_name, tool) => {
+      const description = tool.metadata.description ?? '';
+      // Qué hace + cuándo usarla + qué devuelve: una línea no alcanza.
+      expect(description.length).toBeGreaterThanOrEqual(150);
+      expect(description.length).toBeLessThanOrEqual(600);
+      expect(description).toMatch(/returns/i);
+    },
+  );
+
+  it.each(allTools.map((tool) => [tool.metadata.name, tool] as const))(
+    '%s documents every parameter',
+    (_name, tool) => {
+      const schema = ('schema' in tool ? tool.schema : {}) as Record<
+        string,
+        { description?: string }
+      >;
+      for (const [param, field] of Object.entries(schema)) {
+        expect(field.description, `${param} needs a description`).toBeTruthy();
+        expect(field.description!.length, `${param} description too short`).toBeGreaterThan(20);
+      }
+    },
+  );
 });
 
 describe('agent prompts', () => {
@@ -173,6 +222,56 @@ describe('find-subject-materials', () => {
       args: { resourceId: 'r1', subjectId: 'A2C1M2' },
       reason: 'Download Parcial 2024.',
     });
+  });
+});
+
+describe('find-subject-materials fan-out', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('never fetches resources for more than MAX_SUBJECT_FANOUT subjects', async () => {
+    const subjects = Array.from({ length: 20 }, (_, i) => ({
+      id: `S${i}`,
+      facultyId: 'FACET',
+      title: `Materia ${i}`,
+      slug: `materia-${i}`,
+      year: 1,
+      quadmester: 1,
+      createdAt: 'now',
+      updatedAt: 'now',
+      resourceCounts: { resumen: 0, parcial: 0, final: 0 },
+    }));
+    const subjectUrls: string[] = [];
+    let resourceCalls = 0;
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/v1/subjects')) {
+        subjectUrls.push(url);
+        return new Response(JSON.stringify({ data: subjects, total: 20, page: 1, totalPages: 1 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      resourceCalls += 1;
+      return new Response(JSON.stringify({ data: [], total: 0, page: 1, totalPages: 1 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+
+    const result = await findSubjectMaterials({
+      ...emptyFindSubjectMaterialsArgs,
+      search: 'materia',
+      limit: 50,
+    });
+
+    expect(resourceCalls).toBe(MAX_SUBJECT_FANOUT);
+    expect(subjectUrls[0]).toContain(`limit=${MAX_SUBJECT_FANOUT}`);
+    expect((result.structuredContent as { totalSubjects: number }).totalSubjects).toBe(
+      MAX_SUBJECT_FANOUT,
+    );
   });
 });
 

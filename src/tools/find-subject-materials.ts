@@ -15,32 +15,64 @@ import {
 } from '../lib/toolShared';
 
 const DEFAULT_LIMIT = 5;
+/**
+ * Tope de materias por llamada: cada una dispara un `GET /resources` al
+ * backend. Sin tope, `limit: 50` eran 51 requests por invocación.
+ */
+export const MAX_SUBJECT_FANOUT = 10;
 
 export const schema = {
   subjectId: z
     .string()
     .optional()
-    .describe('Optional subject UUID. Use the subject id returned by search-subjects.'),
-  search: z.string().min(1).optional().describe('Optional free text search over subject title.'),
-  careerId: z.string().optional().describe('Optional career UUID filter from list-careers.'),
-  facultyId: z.string().optional().describe('Optional faculty UUID filter from list-faculties.'),
-  year: z.number().int().min(1).max(5).optional().describe('Academic year (1-5)'),
-  quadmester: z.number().int().min(1).max(2).optional().describe('Academic quadmester (1-2)'),
+    .describe(
+      'Subject id from search-subjects. When given, the other subject filters are ignored and only that subject is returned.',
+    ),
+  search: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Free-text search over subject titles, e.g. "algebra" or "análisis matemático".'),
+  careerId: z
+    .string()
+    .optional()
+    .describe('Only subjects of this career (career id from list-careers).'),
+  facultyId: z
+    .string()
+    .optional()
+    .describe('Only subjects of this faculty (faculty id from list-faculties).'),
+  year: z
+    .number()
+    .int()
+    .min(1)
+    .max(5)
+    .optional()
+    .describe('Year of the degree plan the subject belongs to, from 1 to 5.'),
+  quadmester: z
+    .number()
+    .int()
+    .min(1)
+    .max(2)
+    .optional()
+    .describe('Cuatrimestre (half-year term) within that year: 1 or 2.'),
   type: z
     .enum(['resumen', 'parcial', 'final'])
     .optional()
-    .describe('Optional resource type filter.'),
+    .describe('Resource type: resumen (summary), parcial (midterm exam) or final (final exam).'),
   limit: z
     .number()
     .int()
     .min(1)
     .optional()
-    .describe('Maximum subjects to inspect and maximum resources per subject.'),
+    .describe(
+      `Max resources returned per subject (default ${DEFAULT_LIMIT}, capped at 50). Also caps how many subjects are inspected, never more than ${MAX_SUBJECT_FANOUT}.`,
+    ),
 };
 
 export const metadata: ToolMetadata = {
   name: 'find-subject-materials',
-  description: 'Find subject candidates and their published resources in one read-only workflow',
+  description:
+    'Search subjects and fetch their published study materials (parciales, finales, resúmenes) in a single call. This is the recommended starting point when the user asks for materials of a subject by name; use list-resources instead to page through every resource of one known subject. Requires at least one of subjectId, search, careerId or facultyId, and inspects at most 10 subjects. Returns each matching subject with its resources and resource counts.',
   annotations: {
     ...readOnlyAnnotations,
     title: 'Find subject materials',
@@ -109,6 +141,7 @@ export default async function findSubjectMaterials(args: InferSchema<typeof sche
     validateSearchInput(args);
 
     const limit = clampLimit(args.limit) ?? DEFAULT_LIMIT;
+    const subjectLimit = Math.min(limit, MAX_SUBJECT_FANOUT);
     const subjects = args.subjectId
       ? [await exactamenteApiClient.getSubject(args.subjectId).then((r) => r.subject)]
       : (
@@ -118,9 +151,9 @@ export default async function findSubjectMaterials(args: InferSchema<typeof sche
             facultyId: args.facultyId,
             year: args.year,
             quadmester: args.quadmester,
-            limit,
+            limit: subjectLimit,
           })
-        ).data;
+        ).data.slice(0, subjectLimit);
 
     const results = await Promise.all(
       subjects.map(async (subject) => {
